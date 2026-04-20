@@ -3,51 +3,277 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceso al Sistema</title>
+    <title>Acceso</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #0f0e17; }
-        .login-container { background: #1a1825; padding: 2.5rem 2rem; border-radius: 8px; border: 1px solid rgba(200,150,50,0.25); width: 340px; box-shadow: 0 0 40px rgba(180,60,20,0.08); }
-        .logo { text-align: center; margin-bottom: 2rem; }
-        .logo h2 { font-size: 22px; letter-spacing: 4px; color: #c89632; font-weight: 700; }
-        .logo p { font-size: 11px; color: rgba(180,160,120,0.5); letter-spacing: 3px; text-transform: uppercase; margin-top: 4px; }
-        .error { color: #e24b4a; background: rgba(226,75,74,0.1); border: 1px solid rgba(226,75,74,0.3); border-radius: 4px; font-size: 13px; padding: 10px 12px; margin-bottom: 1.2rem; text-align: center; }
-        label { display: block; font-size: 11px; letter-spacing: 2px; color: rgba(180,160,120,0.6); text-transform: uppercase; margin-bottom: 6px; }
-        input[type="text"], input[type="password"] { width: 100%; padding: 10px 12px; margin-bottom: 1.2rem; background: rgba(10,8,20,0.8); border: 1px solid rgba(200,150,50,0.2); border-radius: 4px; color: #e0d5c5; font-size: 15px; outline: none; transition: border-color 0.2s; }
-        input[type="text"]:focus, input[type="password"]:focus { border-color: rgba(200,150,50,0.6); }
-        button { width: 100%; padding: 12px; background: linear-gradient(135deg, #8b3010, #c84820, #8b3010); border: 1px solid rgba(200,80,30,0.5); border-radius: 4px; color: #f5e0c5; font-size: 13px; letter-spacing: 3px; cursor: pointer; margin-top: 0.4rem; transition: opacity 0.2s; }
-        button:hover { opacity: 0.85; }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            background: #050508;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        /* fondo con vignette */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at center, #0d0b14 30%, #020204 100%);
+            z-index: 0;
+        }
+
+        .wrap {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 380px;
+        }
+
+        /* título superior */
+        .site-title {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .site-title h1 {
+            font-family: 'Crimson Text', serif;
+            font-size: 32px;
+            font-weight: 600;
+            color: #6a3a3a;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+        }
+
+        .site-title p {
+            font-size: 10px;
+            color: #2a2030;
+            letter-spacing: 5px;
+            margin-top: 4px;
+        }
+
+        /* tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #1a0f1f;
+            margin-bottom: 0;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            font-size: 11px;
+            letter-spacing: 3px;
+            cursor: pointer;
+            color: #3a2a40;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .tab.active {
+            color: #8a4a4a;
+            border-bottom: 2px solid #6a2a2a;
+        }
+
+        /* card */
+        .card {
+            background: #0a0810;
+            border: 1px solid #1a0f1f;
+            border-top: none;
+            padding: 2rem 1.8rem 2.2rem;
+        }
+
+        /* mensajes */
+        .msg {
+            font-size: 12px;
+            padding: 10px 12px;
+            border-radius: 2px;
+            margin-bottom: 1.2rem;
+            letter-spacing: 1px;
+            display: none;
+        }
+        .msg.show { display: block; }
+        .msg.error   { color: #b03030; background: rgba(100,20,20,0.2); border: 1px solid #3a1010; }
+        .msg.success { color: #4a8a4a; background: rgba(20,60,20,0.2); border: 1px solid #103010; }
+
+        /* campos */
+        .field { margin-bottom: 1.1rem; }
+
+        label {
+            display: block;
+            font-size: 10px;
+            letter-spacing: 3px;
+            color: #3a2a40;
+            margin-bottom: 6px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px 12px;
+            background: #06050c;
+            border: 1px solid #1a0f1f;
+            border-radius: 2px;
+            color: #7a5a6a;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: #4a1a2a;
+            color: #c09090;
+        }
+
+        input::placeholder { color: #1e1628; }
+
+        /* indicador de coincidencia */
+        .match-hint {
+            font-size: 10px;
+            letter-spacing: 2px;
+            margin-top: 5px;
+            height: 14px;
+        }
+        .match-hint.ok  { color: #4a8a4a; }
+        .match-hint.bad { color: #8a2a2a; }
+
+        /* botón */
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #12080f;
+            border: 1px solid #3a1520;
+            border-radius: 2px;
+            color: #7a3a3a;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 4px;
+            cursor: pointer;
+            margin-top: 0.8rem;
+            transition: background 0.2s, color 0.2s, border-color 0.2s;
+        }
+
+        .btn:hover {
+            background: #1e0c16;
+            border-color: #6a2a2a;
+            color: #b05050;
+        }
+
+        /* panel oculto */
+        .panel { display: none; }
+        .panel.active { display: block; }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="logo">
-            <h2>Bienvenido</h2>
-            <p>Valide su ingreso</p>
+<div class="wrap">
+
+    <div class="site-title">
+        <h1>SANCTUM</h1>
+        <p>sistema de acceso</p>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('login')">INGRESAR</div>
+        <div class="tab" onclick="switchTab('registro')">REGISTRARSE</div>
+    </div>
+
+    <div class="card">
+
+        <!-- ── LOGIN ── -->
+        <div class="panel active" id="panel-login">
+
+            <?php if (isset($_GET['error'])): ?>
+                <div class="msg error show">
+                    <?php
+                        if ($_GET['error'] === 'credenciales') echo '// usuario o contraseña incorrectos';
+                        if ($_GET['error'] === 'vacio')        echo '// completa todos los campos';
+                    ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if (isset($_GET['registered']) && $_GET['registered'] === '1'): ?>
+                <div class="msg success show">// registro exitoso — puedes ingresar</div>
+            <?php endif; ?>
+
+            <form action="login_proceso.php" method="POST">
+                <div class="field">
+                    <label>usuario</label>
+                    <input type="text" name="usuario" placeholder="_ _ _ _ _ _" required autocomplete="off">
+                </div>
+                <div class="field">
+                    <label>contraseña</label>
+                    <input type="password" name="password" placeholder="• • • • • • • •" required>
+                </div>
+                <button type="submit" class="btn">[ ENTRAR ]</button>
+            </form>
         </div>
 
-        <?php if (isset($_GET['error'])): ?>
-            <div class="error">
-                <?php
-                    if ($_GET['error'] === 'credenciales')  echo 'Usuario o contraseña incorrectos.';
-                    if ($_GET['error'] === 'vacio')         echo 'Por favor, rellena todos los campos.';
-                    if ($_GET['error'] === 'no_coinciden')  echo 'Las contraseñas no coinciden.'; 
-                ?>
-            </div>
-        <?php endif; ?>
+        <!-- ── REGISTRO ── -->
+        <div class="panel" id="panel-registro">
 
-        <form action="login_proceso.php" method="POST">
-            <label for="usuario">Usuario</label>
-            <input type="text" name="usuario" id="usuario" placeholder="Ej: admin" required autocomplete="off">
+            <?php if (isset($_GET['reg_error'])): ?>
+                <div class="msg error show">
+                    <?php
+                        if ($_GET['reg_error'] === 'vacio')        echo '// completa todos los campos';
+                        if ($_GET['reg_error'] === 'no_coinciden') echo '// las contraseñas no coinciden';
+                        if ($_GET['reg_error'] === 'existe')       echo '// ese usuario ya está registrado';
+                    ?>
+                </div>
+            <?php endif; ?>
 
-            <label for="password">Contraseña</label>
-            <input type="password" name="password" id="password" placeholder="••••••••" required>
+            <form action="registro_proceso.php" method="POST">
+                <div class="field">
+                    <label>usuario</label>
+                    <input type="text" name="usuario" placeholder="_ _ _ _ _ _" required autocomplete="off">
+                </div>
+                <div class="field">
+                    <label>contraseña</label>
+                    <input type="password" name="password" id="reg-pass" placeholder="• • • • • • • •" required oninput="checkMatch()">
+                </div>
+                <div class="field">
+                    <label>confirmar contraseña</label>
+                    <input type="password" name="password2" id="reg-pass2" placeholder="• • • • • • • •" required oninput="checkMatch()">
+                    <div class="match-hint" id="match-hint"></div>
+                </div>
+                <button type="submit" class="btn">[ REGISTRAR ]</button>
+            </form>
+        </div>
 
-            <label for="password2">Confirmar contraseña</label>
-            <input type="password" name="password2" id="password2" placeholder="••••••••" required>
-
-            <button type="submit">INGRESAR</button>
-        </form>
     </div>
+</div>
+
+<script>
+    // Abrir en el tab correcto según parámetro GET
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('reg_error') || params.get('tab') === 'registro') {
+        switchTab('registro');
+    }
+
+    function switchTab(tab) {
+        document.querySelectorAll('.tab').forEach((t, i) => {
+            t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'registro'));
+        });
+        document.getElementById('panel-login').classList.toggle('active', tab === 'login');
+        document.getElementById('panel-registro').classList.toggle('active', tab === 'registro');
+    }
+
+    function checkMatch() {
+        const p1 = document.getElementById('reg-pass').value;
+        const p2 = document.getElementById('reg-pass2').value;
+        const hint = document.getElementById('match-hint');
+        if (!p2) { hint.textContent = ''; hint.className = 'match-hint'; return; }
+        if (p1 === p2) { hint.textContent = '// coinciden'; hint.className = 'match-hint ok'; }
+        else           { hint.textContent = '// no coinciden'; hint.className = 'match-hint bad'; }
+    }
+</script>
 </body>
 </html>
