@@ -1,16 +1,28 @@
 <?php
-$host    = 'localhost';
-$db      = 'mi_sistema';
-$user    = 'root';
-$pass    = '';
-$charset = 'utf8mb4';
+// ============================================================
+// db.php — Conexión a la base de datos
+// ============================================================
 
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+define('DB_HOST',    'localhost');
+define('DB_USER',    'root');          // <-- cambiá por tu usuario
+define('DB_PASS',    '');              // <-- cambiá por tu contraseña
+define('DB_NAME',    'nueva_db');
+define('DB_CHARSET', 'utf8mb4');
 
-try {
-    $pdo = new PDO($dsn, $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    die("Error de conexión: " . $e->getMessage());
+function getConexion(): mysqli {
+    static $conn = null;
+
+    if ($conn === null) {
+        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+
+        if ($conn->connect_error) {
+            // En producción: logueá el error en vez de mostrarlo
+            error_log("Error de conexión: " . $conn->connect_error);
+            die(json_encode(['error' => 'No se pudo conectar a la base de datos.']));
+        }
+
+        $conn->set_charset(DB_CHARSET);
+    }
+
+    return $conn;
 }
