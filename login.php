@@ -1,9 +1,12 @@
 <?php
 session_start();
-if (isset($_SESSION['usuario_id'])) {
+
+// Solo redirigir si la sesión está completa (evita loops)
+if (!empty($_SESSION['usuario_id'])) {
     header("Location: perfil.php");
     exit();
 }
+
 $error = $_GET['error'] ?? '';
 ?>
 <!DOCTYPE html>
@@ -11,237 +14,317 @@ $error = $_GET['error'] ?? '';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Iniciar sesión</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Nunito', sans-serif;
-            background: #f0f4ff;
+            font-family: 'Inter', sans-serif;
+            background: #f4f5f7;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-image:
-                radial-gradient(circle at 20% 20%, #d6e6ff 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, #ffd6f0 0%, transparent 50%),
-                radial-gradient(circle at 60% 10%, #d6ffd6 0%, transparent 40%);
+            color: #1a1d23;
         }
 
-        .container {
+        .page-wrapper {
+            display: flex;
             width: 100%;
-            max-width: 420px;
-            padding: 1.5rem;
+            max-width: 960px;
+            min-height: 560px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 40px rgba(0,0,0,0.10);
+            margin: 2rem 1rem;
         }
 
-        .card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 2.5rem 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            box-shadow: 0 8px 32px rgba(100, 100, 180, 0.08);
+        .panel-left {
+            flex: 1;
+            background: #1e2235;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
         }
 
-        .logo-area {
-            text-align: center;
-            margin-bottom: 2rem;
+        .panel-left::before {
+            content: '';
+            position: absolute;
+            top: -80px; right: -80px;
+            width: 280px; height: 280px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.03);
         }
 
-        .logo-icon {
-            width: 64px;
-            height: 64px;
-            background: linear-gradient(135deg, #a8c8ff, #d4a8ff);
-            border-radius: 18px;
-            display: inline-flex;
+        .panel-left::after {
+            content: '';
+            position: absolute;
+            bottom: -60px; left: -60px;
+            width: 220px; height: 220px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.03);
+        }
+
+        .brand-mark {
+            width: 44px; height: 44px;
+            background: #3b6bff;
+            border-radius: 10px;
+            display: flex;
             align-items: center;
             justify-content: center;
+            margin-bottom: 2.5rem;
+            font-size: 20px;
+        }
+
+        .panel-left h2 {
+            font-size: 1.65rem;
+            font-weight: 600;
+            color: #ffffff;
+            line-height: 1.35;
             margin-bottom: 1rem;
-            font-size: 28px;
         }
 
-        h1 {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: #3d3580;
-            letter-spacing: -0.3px;
-        }
-
-        .subtitle {
+        .panel-left p {
             font-size: 0.9rem;
-            color: #8b8fa8;
-            margin-top: 0.3rem;
+            color: #8b92a9;
+            line-height: 1.7;
         }
 
-        .form-group {
-            margin-bottom: 1.2rem;
+        .feature-list {
+            margin-top: 2rem;
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
         }
+
+        .feature-list li {
+            font-size: 0.85rem;
+            color: #8b92a9;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .feature-list li::before {
+            content: '';
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: #3b6bff;
+            flex-shrink: 0;
+        }
+
+        .panel-right {
+            flex: 1;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3rem 2.5rem;
+        }
+
+        .form-header { margin-bottom: 2rem; }
+
+        .form-header h1 {
+            font-size: 1.45rem;
+            font-weight: 600;
+            color: #1a1d23;
+            margin-bottom: 0.35rem;
+        }
+
+        .form-header p { font-size: 0.875rem; color: #6b7280; }
+
+        .form-group { margin-bottom: 1.25rem; }
 
         label {
             display: block;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #5c5f7a;
-            margin-bottom: 0.45rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-wrap { position: relative; }
+
+        .input-icon {
+            position: absolute;
+            left: 12px; top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 14px;
+            pointer-events: none;
+            font-style: normal;
         }
 
         input[type="text"],
-        input[type="email"],
         input[type="password"] {
             width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1.5px solid #e2e4f0;
-            border-radius: 12px;
-            font-family: 'Nunito', sans-serif;
-            font-size: 0.95rem;
-            color: #3d3580;
-            background: #f8f9ff;
-            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+            padding: 0.7rem 0.9rem 0.7rem 2.4rem;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            color: #1a1d23;
+            background: #fafafa;
+            transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
             outline: none;
         }
 
         input:focus {
-            border-color: #a8c8ff;
+            border-color: #3b6bff;
             background: #fff;
-            box-shadow: 0 0 0 4px rgba(168, 200, 255, 0.2);
+            box-shadow: 0 0 0 3px rgba(59,107,255,0.1);
         }
 
-        .btn-primary {
-            width: 100%;
-            padding: 0.85rem;
-            background: linear-gradient(135deg, #a8c8ff, #c4a8ff);
-            border: none;
-            border-radius: 12px;
-            font-family: 'Nunito', sans-serif;
-            font-size: 1rem;
-            font-weight: 700;
-            color: #3d3580;
-            cursor: pointer;
-            transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
-            margin-top: 0.5rem;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(168, 200, 255, 0.5);
-            opacity: 0.95;
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
-        .error-msg {
-            background: #fff0f3;
-            border: 1px solid #ffc4ce;
-            border-radius: 10px;
-            padding: 0.7rem 1rem;
-            font-size: 0.85rem;
-            color: #c0384e;
-            margin-bottom: 1.2rem;
+        .row-forgot {
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            justify-content: flex-end;
+            margin-top: 0.4rem;
+        }
+
+        .row-forgot a {
+            font-size: 0.8rem;
+            color: #6b7280;
+            text-decoration: none;
+        }
+
+        .row-forgot a:hover { color: #3b6bff; }
+
+        .btn-submit {
+            width: 100%;
+            padding: 0.8rem;
+            background: #1e2235;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #ffffff;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+            margin-top: 0.5rem;
+            letter-spacing: 0.02em;
+        }
+
+        .btn-submit:hover { background: #2d3450; }
+        .btn-submit:active { transform: scale(0.99); }
+
+        .error-box {
+            background: #fff5f5;
+            border: 1px solid #fecaca;
+            border-left: 3px solid #ef4444;
+            border-radius: 6px;
+            padding: 0.65rem 0.9rem;
+            font-size: 0.83rem;
+            color: #b91c1c;
+            margin-bottom: 1.25rem;
         }
 
         .divider {
-            text-align: center;
-            margin: 1.2rem 0;
-            color: #b0b4cc;
-            font-size: 0.85rem;
-            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 1.5rem 0 1.25rem;
+            color: #d1d5db;
+            font-size: 0.8rem;
         }
 
-        .divider::before,
-        .divider::after {
+        .divider::before, .divider::after {
             content: '';
-            position: absolute;
-            top: 50%;
-            width: 38%;
+            flex: 1;
             height: 1px;
-            background: #e2e4f0;
+            background: #e5e7eb;
         }
 
-        .divider::before { left: 0; }
-        .divider::after { right: 0; }
-
-        .link-register {
+        .register-link {
             text-align: center;
-            font-size: 0.9rem;
-            color: #8b8fa8;
+            font-size: 0.85rem;
+            color: #6b7280;
         }
 
-        .link-register a {
-            color: #7b6fd4;
-            font-weight: 600;
+        .register-link a {
+            color: #3b6bff;
+            font-weight: 500;
             text-decoration: none;
-            transition: color 0.2s;
         }
 
-        .link-register a:hover {
-            color: #5c50b0;
-            text-decoration: underline;
-        }
+        .register-link a:hover { text-decoration: underline; }
 
-        .forgot {
-            text-align: right;
-            margin-top: 0.3rem;
-        }
-
-        .forgot a {
-            font-size: 0.82rem;
-            color: #a8a4cc;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .forgot a:hover {
-            color: #7b6fd4;
+        @media (max-width: 640px) {
+            .panel-left { display: none; }
+            .panel-right { padding: 2rem 1.5rem; border-radius: 16px; }
+            .page-wrapper { border-radius: 16px; }
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="card">
-        <div class="logo-area">
-            <div class="logo-icon">🌸</div>
-            <h1>¡Bienvenido!</h1>
-            <p class="subtitle">Ingresá tus datos para continuar</p>
+<div class="page-wrapper">
+
+    <div class="panel-left">
+        <div class="brand-mark">&#9671;</div>
+        <h2>Accedé a tu cuenta de forma segura</h2>
+        <p>Plataforma de gestión con autenticación segura y control de acceso.</p>
+        <ul class="feature-list">
+            <li>Sesiones protegidas con PHP</li>
+            <li>Contraseñas cifradas con bcrypt</li>
+            <li>Acceso desde cualquier dispositivo</li>
+        </ul>
+    </div>
+
+    <div class="panel-right">
+        <div class="form-header">
+            <h1>Iniciar sesión</h1>
+            <p>Ingresá tus credenciales para continuar</p>
         </div>
 
         <?php if ($error): ?>
-        <div class="error-msg">
-            ⚠️
+        <div class="error-box">
             <?php
                 if ($error === 'credenciales') echo 'Usuario o contraseña incorrectos.';
-                elseif ($error === 'campos') echo 'Por favor completá todos los campos.';
+                elseif ($error === 'campos')    echo 'Completá todos los campos.';
                 else echo htmlspecialchars($error);
             ?>
         </div>
         <?php endif; ?>
 
-        <form action="login_proceso.php" method="POST">
+        <form action="login_proceso.php" method="POST" autocomplete="off">
             <div class="form-group">
                 <label for="usuario">Usuario o email</label>
-                <input type="text" id="usuario" name="usuario" placeholder="tucorreo@ejemplo.com" required>
+                <div class="input-wrap">
+                    <i class="input-icon">@</i>
+                    <input type="text" id="usuario" name="usuario"
+                           placeholder="usuario o correo" required autocomplete="username">
+                </div>
             </div>
 
             <div class="form-group">
                 <label for="contrasena">Contraseña</label>
-                <input type="password" id="contrasena" name="contrasena" placeholder="••••••••" required>
-                <div class="forgot"><a href="#">¿Olvidaste tu contraseña?</a></div>
+                <div class="input-wrap">
+                    <i class="input-icon">*</i>
+                    <input type="password" id="contrasena" name="contrasena"
+                           placeholder="••••••••" required autocomplete="current-password">
+                </div>
+                <div class="row-forgot">
+                    <a href="#">¿Olvidaste tu contraseña?</a>
+                </div>
             </div>
 
-            <button type="submit" class="btn-primary">Iniciar sesión ✨</button>
+            <button type="submit" class="btn-submit">Ingresar</button>
         </form>
 
         <div class="divider">o</div>
 
-        <p class="link-register">
-            ¿No tenés cuenta? <a href="registro.php">Registrate gratis</a>
+        <p class="register-link">
+            ¿No tenés cuenta? <a href="registro.php">Crear cuenta</a>
         </p>
     </div>
+
 </div>
 </body>
 </html>
