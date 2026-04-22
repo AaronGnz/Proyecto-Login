@@ -15,13 +15,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_FILES['imagen_usuario'])) 
 
 $archivo = $_FILES['imagen_usuario'];
 
-// Verificar que no hubo error en la subida
 if ($archivo['error'] !== UPLOAD_ERR_OK) {
     header("Location: perfil.php?upload=error");
     exit();
 }
 
-// Validar que sea una imagen real comprobando el tipo MIME real del archivo
+// Validar MIME real
 $finfo    = new finfo(FILEINFO_MIME_TYPE);
 $mimeReal = $finfo->file($archivo['tmp_name']);
 
@@ -44,22 +43,23 @@ if (!is_dir($directorio)) {
     mkdir($directorio, 0755, true);
 }
 
-// Generar nombre único para evitar sobreescrituras y conflictos
-$extension  = pathinfo($archivo['name'], PATHINFO_EXTENSION);
+$extension   = pathinfo($archivo['name'], PATHINFO_EXTENSION);
 $nombreFinal = 'perfil_' . $_SESSION['usuario_id'] . '_' . time() . '.' . strtolower($extension);
 $rutaFinal   = $directorio . $nombreFinal;
 
-// Mover el archivo
 if (!move_uploaded_file($archivo['tmp_name'], $rutaFinal)) {
     header("Location: perfil.php?upload=error");
     exit();
 }
 
-// Guardar la ruta en la base de datos
-$stmt = $pdo->prepare("UPDATE usuarios SET foto = ? WHERE id = ?");
-$stmt->execute([$rutaFinal, $_SESSION['usuario_id']]);
+// Guardar la ruta en la base de datos usando mysqli
+$conn = getConexion();
+$stmt = $conn->prepare("UPDATE usuarios SET avatar = ? WHERE id = ?");
+$stmt->bind_param('si', $rutaFinal, $_SESSION['usuario_id']);
+$stmt->execute();
+$stmt->close();
 
-// Actualizar la sesión con la nueva foto
+// Actualizar sesión
 $_SESSION['foto'] = $rutaFinal;
 
 header("Location: perfil.php?upload=ok");
