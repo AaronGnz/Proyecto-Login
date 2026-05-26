@@ -1,7 +1,5 @@
 <?php
-// ============================================================
-// registro_proceso.php — Controlador: procesa el registro
-// ============================================================
+
 session_start();
 require 'db.php';
 
@@ -16,25 +14,25 @@ $usr_email = trim($_POST['usr_email'] ?? '');
 $usr_pass  = $_POST['usr_pass']  ?? '';
 $usr_pass2 = $_POST['usr_pass2'] ?? '';
 
-// --- Validación servidor: campos vacíos ---
+
 if (empty($usr_name) || empty($usr_email) || empty($usr_pass) || empty($usr_pass2)) {
     header("Location: registro.php?error=vacio&usr_name=" . urlencode($usr_name) . "&usr_email=" . urlencode($usr_email));
     exit();
 }
 
-// --- Validación servidor: formato email ---
+
 if (!filter_var($usr_email, FILTER_VALIDATE_EMAIL)) {
     header("Location: registro.php?error=email&usr_name=" . urlencode($usr_name) . "&usr_email=" . urlencode($usr_email));
     exit();
 }
 
-// --- Validación servidor: contraseñas coinciden ---
+
 if ($usr_pass !== $usr_pass2) {
     header("Location: registro.php?error=no_coinciden&usr_name=" . urlencode($usr_name) . "&usr_email=" . urlencode($usr_email));
     exit();
 }
 
-// --- Validación servidor: contraseña segura (min 8 chars + 1 mayúscula) ---
+
 if (strlen($usr_pass) < 8 || !preg_match('/[A-Z]/', $usr_pass)) {
     header("Location: registro.php?error=pass_debil&usr_name=" . urlencode($usr_name) . "&usr_email=" . urlencode($usr_email));
     exit();
@@ -77,7 +75,7 @@ if (isset($_FILES['imagen_perfil']) && $_FILES['imagen_perfil']['error'] === UPL
         exit();
     }
 
-    // Crear carpeta si no existe
+
     $directorio = "subidas/";
     if (!is_dir($directorio)) {
         mkdir($directorio, 0755, true);
@@ -92,7 +90,7 @@ if (isset($_FILES['imagen_perfil']) && $_FILES['imagen_perfil']['error'] === UPL
     }
 }
 
-// --- Insertar usuario en la base de datos ---
+
 $hash = password_hash($usr_pass, PASSWORD_DEFAULT);
 
 $stmt = $conn->prepare("INSERT INTO usuario (usr_name, usr_email, usr_pass, imagen) VALUES (?, ?, ?, ?)");
