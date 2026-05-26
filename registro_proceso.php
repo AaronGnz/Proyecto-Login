@@ -40,7 +40,7 @@ if (strlen($usr_pass) < 8 || !preg_match('/[A-Z]/', $usr_pass)) {
 
 $conn = getConexion();
 
-// --- Verificar si el email ya existe ---
+
 $stmt = $conn->prepare("SELECT id FROM usuario WHERE usr_email = ?");
 $stmt->bind_param('s', $usr_email);
 $stmt->execute();
@@ -53,13 +53,13 @@ if ($stmt->num_rows > 0) {
 }
 $stmt->close();
 
-// --- Manejo de imagen de perfil ---
+
 $imagen = null;
 
 if (isset($_FILES['imagen_perfil']) && $_FILES['imagen_perfil']['error'] === UPLOAD_ERR_OK) {
     $archivo = $_FILES['imagen_perfil'];
 
-    // Validar MIME real
+  
     $finfo    = new finfo(FILEINFO_MIME_TYPE);
     $mimeReal = $finfo->file($archivo['tmp_name']);
     $tiposPermitidos = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
