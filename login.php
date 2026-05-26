@@ -1,7 +1,5 @@
 <?php
-// ============================================================
-// login.php — Vista: Formulario de inicio de sesión
-// ============================================================
+
 session_start();
 
 if (!empty($_SESSION['usuario_id'])) {
@@ -325,7 +323,7 @@ $error = $_GET['error'] ?? '';
 </div>
 
 <script>
-    // Validación cliente: campos vacíos
+  
     function validarLogin() {
         const email = document.getElementById('usr_email').value.trim();
         const pass  = document.getElementById('usr_pass').value;
