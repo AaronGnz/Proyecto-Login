@@ -1,7 +1,5 @@
 <?php
-// ============================================================
-// publicacion_proceso.php — Controlador: guardar publicación
-// ============================================================
+
 session_start();
 require_once __DIR__ . '/db.php';
 
@@ -18,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $mensaje    = trim($_POST['mensaje'] ?? '');
 $usuario_id = (int) $_SESSION['usuario_id'];
 
-// --- Validación servidor: mensaje vacío ---
+
 if (empty($mensaje)) {
     header("Location: perfil.php?post=vacio");
     exit();
