@@ -1,7 +1,5 @@
 <?php
-// ============================================================
-// registro.php — Vista: Formulario de registro
-// ============================================================
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -506,7 +504,7 @@
         document.getElementById('btn-submit').disabled = !(okLen && okUpper && okMatch && okName && okEmail);
     }
 
-    // Habilitar updateBtn en campos de texto también
+
     document.getElementById('usr_name').addEventListener('input', updateBtn);
     document.getElementById('usr_email').addEventListener('input', updateBtn);
 </script>
