@@ -1,11 +1,9 @@
 <?php
-// ============================================================
-// db.php — Conexión a la base de datos
-// ============================================================
+
 
 define('DB_HOST',    'localhost');
-define('DB_USER',    'root');          // <-- cambiá por tu usuario
-define('DB_PASS',    '');              // <-- cambiá por tu contraseña
+define('DB_USER',    'root');          
+define('DB_PASS',    '');          
 define('DB_NAME',    'base_usuarios');
 define('DB_CHARSET', 'utf8mb4');
 
