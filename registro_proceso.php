@@ -1,50 +1,112 @@
 <?php
+// ============================================================
+// registro_proceso.php — Controlador: procesa el registro
+// ============================================================
+session_start();
 require 'db.php';
 
-$usuario   = trim($_POST['usuario']   ?? '');
-$password  = $_POST['password']  ?? '';
-$password2 = $_POST['password2'] ?? '';
-
-if (empty($usuario) || empty($password) || empty($password2)) {
-    header("Location: registro.php?error=vacio&usuario=" . urlencode($usuario));
+// Solo aceptar POST
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: registro.php");
     exit();
 }
 
-if ($password !== $password2) {
-    header("Location: registro.php?error=no_coinciden&usuario=" . urlencode($usuario));
+$usr_name  = trim($_POST['usr_name']  ?? '');
+$usr_email = trim($_POST['usr_email'] ?? '');
+$usr_pass  = $_POST['usr_pass']  ?? '';
+$usr_pass2 = $_POST['usr_pass2'] ?? '';
+
+// --- Validación servidor: campos vacíos ---
+if (empty($usr_name) || empty($usr_email) || empty($usr_pass) || empty($usr_pass2)) {
+    header("Location: registro.php?error=vacio&usr_name=" . urlencode($usr_name) . "&usr_email=" . urlencode($usr_email));
     exit();
 }
 
-// Validar requisitos de contraseña
-if (strlen($password) < 8 || !preg_match('/[A-Z]/', $password)) {
-    header("Location: registro.php?error=pass_debil&usuario=" . urlencode($usuario));
+// --- Validación servidor: formato email ---
+if (!filter_var($usr_email, FILTER_VALIDATE_EMAIL)) {
+    header("Location: registro.php?error=email&usr_name=" . urlencode($usr_name) . "&usr_email=" . urlencode($usr_email));
+    exit();
+}
+
+// --- Validación servidor: contraseñas coinciden ---
+if ($usr_pass !== $usr_pass2) {
+    header("Location: registro.php?error=no_coinciden&usr_name=" . urlencode($usr_name) . "&usr_email=" . urlencode($usr_email));
+    exit();
+}
+
+// --- Validación servidor: contraseña segura (min 8 chars + 1 mayúscula) ---
+if (strlen($usr_pass) < 8 || !preg_match('/[A-Z]/', $usr_pass)) {
+    header("Location: registro.php?error=pass_debil&usr_name=" . urlencode($usr_name) . "&usr_email=" . urlencode($usr_email));
     exit();
 }
 
 $conn = getConexion();
 
-// Verificar si el usuario ya existe
-$stmt = $conn->prepare("SELECT id FROM usuarios WHERE usuario = ?");
-$stmt->bind_param('s', $usuario);
+// --- Verificar si el email ya existe ---
+$stmt = $conn->prepare("SELECT id FROM usuario WHERE usr_email = ?");
+$stmt->bind_param('s', $usr_email);
 $stmt->execute();
 $stmt->store_result();
 
 if ($stmt->num_rows > 0) {
     $stmt->close();
-    header("Location: registro.php?error=existe&usuario=" . urlencode($usuario));
+    header("Location: registro.php?error=email_existe&usr_name=" . urlencode($usr_name) . "&usr_email=" . urlencode($usr_email));
     exit();
 }
 $stmt->close();
 
-// Insertar nuevo usuario con contraseña hasheada
-$hash   = password_hash($password, PASSWORD_DEFAULT);
-$email  = $usuario . '@placeholder.com';
-$nombre = $usuario;
+// --- Manejo de imagen de perfil ---
+$imagen = null;
 
-$stmt = $conn->prepare("INSERT INTO usuarios (usuario, email, contrasena, nombre) VALUES (?, ?, ?, ?)");
-$stmt->bind_param('ssss', $usuario, $email, $hash, $nombre);
+if (isset($_FILES['imagen_perfil']) && $_FILES['imagen_perfil']['error'] === UPLOAD_ERR_OK) {
+    $archivo = $_FILES['imagen_perfil'];
+
+    // Validar MIME real
+    $finfo    = new finfo(FILEINFO_MIME_TYPE);
+    $mimeReal = $finfo->file($archivo['tmp_name']);
+    $tiposPermitidos = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+    if (!in_array($mimeReal, $tiposPermitidos)) {
+        header("Location: registro.php?error=imagen&usr_name=" . urlencode($usr_name) . "&usr_email=" . urlencode($usr_email));
+        exit();
+    }
+
+    // Validar tamaño (máx. 2 MB)
+    if ($archivo['size'] > 2 * 1024 * 1024) {
+        header("Location: registro.php?error=imagen&usr_name=" . urlencode($usr_name) . "&usr_email=" . urlencode($usr_email));
+        exit();
+    }
+
+    // Crear carpeta si no existe
+    $directorio = "subidas/";
+    if (!is_dir($directorio)) {
+        mkdir($directorio, 0755, true);
+    }
+
+    $extension   = pathinfo($archivo['name'], PATHINFO_EXTENSION);
+    $nombreFinal = 'perfil_' . uniqid() . '.' . strtolower($extension);
+    $rutaFinal   = $directorio . $nombreFinal;
+
+    if (move_uploaded_file($archivo['tmp_name'], $rutaFinal)) {
+        $imagen = $rutaFinal;
+    }
+}
+
+// --- Insertar usuario en la base de datos ---
+$hash = password_hash($usr_pass, PASSWORD_DEFAULT);
+
+$stmt = $conn->prepare("INSERT INTO usuario (usr_name, usr_email, usr_pass, imagen) VALUES (?, ?, ?, ?)");
+$stmt->bind_param('ssss', $usr_name, $usr_email, $hash, $imagen);
 $stmt->execute();
+$nuevo_id = $conn->insert_id;
 $stmt->close();
 
-header("Location: login.php?registered=1");
+// Iniciar sesión automáticamente
+session_regenerate_id(true);
+$_SESSION['usuario_id'] = (int) $nuevo_id;
+$_SESSION['usr_name']   = $usr_name;
+$_SESSION['usr_email']  = $usr_email;
+$_SESSION['imagen']     = $imagen;
+
+header("Location: perfil.php?registered=1");
 exit();

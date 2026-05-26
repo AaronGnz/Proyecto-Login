@@ -1,59 +1,33 @@
 -- ============================================================
 -- setup.sql — Estructura de la base de datos
--- Ejecutá este archivo una sola vez para crear todo
+-- Ejecutá este archivo UNA sola vez en phpMyAdmin o MySQL CLI
 -- ============================================================
 
-CREATE DATABASE IF NOT EXISTS nueva_db
+CREATE DATABASE IF NOT EXISTS base_usuarios
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
-USE nueva_db;
+USE base_usuarios;
 
--- -----------------------------------------------------------
--- Tabla: usuarios
--- -----------------------------------------------------------
-CREATE TABLE IF NOT EXISTS usuarios (
-    id           INT UNSIGNED    NOT NULL AUTO_INCREMENT,
-    usuario      VARCHAR(50)     NOT NULL,
-    email        VARCHAR(120)    NOT NULL,
-    contrasena   VARCHAR(255)    NOT NULL,   -- siempre guardar con password_hash()
-    nombre       VARCHAR(100)    NOT NULL DEFAULT '',
-    avatar       VARCHAR(255)    NULL,
-    activo       TINYINT(1)      NOT NULL DEFAULT 1,
-    creado_en    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    actualizado  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    PRIMARY KEY (id),
-    UNIQUE KEY uq_usuario (usuario),
-    UNIQUE KEY uq_email   (email)
+-- Tabla de usuarios (exactamente como pide la consigna)
+CREATE TABLE IF NOT EXISTS base_usuarios.usuario (
+  id        INT(11)      NOT NULL AUTO_INCREMENT,
+  usr_name  VARCHAR(100) NOT NULL,
+  usr_email VARCHAR(100) UNIQUE NOT NULL,
+  usr_pass  VARCHAR(100) NOT NULL,
+  imagen    VARCHAR(100) DEFAULT NULL,
+  PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- -----------------------------------------------------------
--- Tabla: sesiones  (opcional — para auditoría de logins)
--- -----------------------------------------------------------
-CREATE TABLE IF NOT EXISTS sesiones (
-    id           INT UNSIGNED    NOT NULL AUTO_INCREMENT,
-    usuario_id   INT UNSIGNED    NOT NULL,
-    ip           VARCHAR(45)     NOT NULL,
-    user_agent   VARCHAR(255)    NULL,
-    creado_en    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    PRIMARY KEY (id),
-    KEY fk_sesiones_usuario (usuario_id),
-    CONSTRAINT fk_sesiones_usuario
-        FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
-        ON DELETE CASCADE
+-- Tabla de publicaciones (opcional requerida por la consigna)
+CREATE TABLE IF NOT EXISTS base_usuarios.publicacion (
+  id          INT(11)      NOT NULL AUTO_INCREMENT,
+  usuario_id  INT(11)      NOT NULL,
+  mensaje     TEXT         NOT NULL,
+  creado_en   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY fk_pub_usuario (usuario_id),
+  CONSTRAINT fk_pub_usuario
+    FOREIGN KEY (usuario_id) REFERENCES usuario (id)
+    ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- -----------------------------------------------------------
--- Usuario de prueba  (contraseña: 123456)
--- Para generar otro hash en PHP: echo password_hash('tupass', PASSWORD_DEFAULT);
--- -----------------------------------------------------------
-INSERT INTO usuarios (usuario, email, contrasena, nombre)
-VALUES (
-    'admin',
-    'admin@ejemplo.com',
-    '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
-    'Administrador'
-)
-ON DUPLICATE KEY UPDATE id = id;

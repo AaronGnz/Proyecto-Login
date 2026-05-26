@@ -1,41 +1,45 @@
 <?php
 // ============================================================
-// login_proceso.php — Procesa el formulario de login
+// login_proceso.php — Controlador: procesa el inicio de sesión
 // ============================================================
 session_start();
 
-// Si ya está logueado, ir a perfil (solo si la sesión es válida)
 if (!empty($_SESSION['usuario_id'])) {
     header("Location: perfil.php");
     exit();
 }
 
-// Solo aceptar POST; si llegan por GET, volver al login SIN loop
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: login.php");
     exit();
 }
 
-// Incluir DB después de validar método para evitar errores innecesarios
 require_once __DIR__ . '/db.php';
 
-$usuario    = trim($_POST['usuario']    ?? '');
-$contrasena = trim($_POST['contrasena'] ?? '');
+$usr_email = trim($_POST['usr_email'] ?? '');
+$usr_pass  = $_POST['usr_pass'] ?? '';
 
-if ($usuario === '' || $contrasena === '') {
+// --- Validación servidor: campos vacíos ---
+if (empty($usr_email) || empty($usr_pass)) {
     header("Location: login.php?error=campos");
+    exit();
+}
+
+// --- Validación servidor: longitud mínima ---
+if (strlen($usr_pass) < 8) {
+    header("Location: login.php?error=credenciales");
     exit();
 }
 
 $conn = getConexion();
 
 $stmt = $conn->prepare(
-    "SELECT id, usuario, nombre, contrasena
-     FROM usuarios
-     WHERE (usuario = ? OR email = ?) AND activo = 1
+    "SELECT id, usr_name, usr_email, usr_pass, imagen
+     FROM usuario
+     WHERE usr_email = ?
      LIMIT 1"
 );
-$stmt->bind_param('ss', $usuario, $usuario);
+$stmt->bind_param('s', $usr_email);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -48,38 +52,17 @@ if ($result->num_rows === 0) {
 $fila = $result->fetch_assoc();
 $stmt->close();
 
-if (!password_verify($contrasena, $fila['contrasena'])) {
+if (!password_verify($usr_pass, $fila['usr_pass'])) {
     header("Location: login.php?error=credenciales");
     exit();
 }
 
-// Login exitoso
+// Login exitoso — guardar datos en sesión
 session_regenerate_id(true);
 $_SESSION['usuario_id'] = (int) $fila['id'];
-$_SESSION['usuario']    = $fila['usuario'];
-$_SESSION['nombre']     = $fila['nombre'];
+$_SESSION['usr_name']   = $fila['usr_name'];
+$_SESSION['usr_email']  = $fila['usr_email'];
+$_SESSION['imagen']     = $fila['imagen'];
 
-// IMPORTANTE: usá una ruta relativa directa a perfil.php
-// Si perfil.php también verifica sesión, asegurate de que NO redirija
-// a login.php cuando la sesión ya existe (ver nota abajo)
 header("Location: perfil.php");
 exit();
-
-/*
- * NOTA ANTI-LOOP:
- * Si perfil.php tiene algo como:
- *   if (!isset($_SESSION['usuario_id'])) { header("Location: login.php"); exit(); }
- *
- * Y login.php tiene:
- *   if (isset($_SESSION['usuario_id'])) { header("Location: perfil.php"); exit(); }
- *
- * El loop ocurre si la sesión NO se guarda correctamente entre requests.
- * Causas comunes:
- *   1. session_save_path no tiene permisos de escritura
- *   2. El servidor tiene cookies deshabilitadas
- *   3. Se llama session_start() más de una vez
- *   4. Headers ya enviados (espacios/BOM antes de <?php)
- *
- * Para diagnosticar, agregá temporalmente en perfil.php:
- *   var_dump($_SESSION); exit();
- */

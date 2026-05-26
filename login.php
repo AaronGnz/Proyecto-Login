@@ -1,7 +1,9 @@
 <?php
+// ============================================================
+// login.php — Vista: Formulario de inicio de sesión
+// ============================================================
 session_start();
 
-// Solo redirigir si la sesión está completa (evita loops)
 if (!empty($_SESSION['usuario_id'])) {
     header("Location: perfil.php");
     exit();
@@ -88,11 +90,7 @@ $error = $_GET['error'] ?? '';
             margin-bottom: 1rem;
         }
 
-        .panel-left p {
-            font-size: 0.9rem;
-            color: #8b92a9;
-            line-height: 1.7;
-        }
+        .panel-left p { font-size: 0.9rem; color: #8b92a9; line-height: 1.7; }
 
         .feature-list {
             margin-top: 2rem;
@@ -162,7 +160,7 @@ $error = $_GET['error'] ?? '';
             font-style: normal;
         }
 
-        input[type="text"],
+        input[type="email"],
         input[type="password"] {
             width: 100%;
             padding: 0.7rem 0.9rem 0.7rem 2.4rem;
@@ -181,20 +179,6 @@ $error = $_GET['error'] ?? '';
             background: #fff;
             box-shadow: 0 0 0 3px rgba(59,107,255,0.1);
         }
-
-        .row-forgot {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 0.4rem;
-        }
-
-        .row-forgot a {
-            font-size: 0.8rem;
-            color: #6b7280;
-            text-decoration: none;
-        }
-
-        .row-forgot a:hover { color: #3b6bff; }
 
         .btn-submit {
             width: 100%;
@@ -223,6 +207,17 @@ $error = $_GET['error'] ?? '';
             padding: 0.65rem 0.9rem;
             font-size: 0.83rem;
             color: #b91c1c;
+            margin-bottom: 1.25rem;
+        }
+
+        .success-box {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-left: 3px solid #16a34a;
+            border-radius: 6px;
+            padding: 0.65rem 0.9rem;
+            font-size: 0.83rem;
+            color: #15803d;
             margin-bottom: 1.25rem;
         }
 
@@ -286,32 +281,34 @@ $error = $_GET['error'] ?? '';
         <?php if ($error): ?>
         <div class="error-box">
             <?php
-                if ($error === 'credenciales') echo 'Usuario o contraseña incorrectos.';
+                if ($error === 'credenciales') echo 'Correo o contraseña incorrectos.';
                 elseif ($error === 'campos')    echo 'Completá todos los campos.';
                 else echo htmlspecialchars($error);
             ?>
         </div>
         <?php endif; ?>
 
-        <form action="login_proceso.php" method="POST" autocomplete="off">
+        <?php if (isset($_GET['registered'])): ?>
+        <div class="success-box">¡Cuenta creada! Ya podés iniciar sesión.</div>
+        <?php endif; ?>
+
+        <form action="login_proceso.php" method="POST" autocomplete="off"
+              onsubmit="return validarLogin()">
             <div class="form-group">
-                <label for="usuario">Usuario o email</label>
+                <label for="usr_email">Correo electrónico</label>
                 <div class="input-wrap">
                     <i class="input-icon">@</i>
-                    <input type="text" id="usuario" name="usuario"
-                           placeholder="usuario o correo" required autocomplete="username">
+                    <input type="email" id="usr_email" name="usr_email"
+                           placeholder="tu@correo.com" required autocomplete="email">
                 </div>
             </div>
 
             <div class="form-group">
-                <label for="contrasena">Contraseña</label>
+                <label for="usr_pass">Contraseña</label>
                 <div class="input-wrap">
                     <i class="input-icon">*</i>
-                    <input type="password" id="contrasena" name="contrasena"
+                    <input type="password" id="usr_pass" name="usr_pass"
                            placeholder="••••••••" required autocomplete="current-password">
-                </div>
-                <div class="row-forgot">
-                    <a href="#">¿Olvidaste tu contraseña?</a>
                 </div>
             </div>
 
@@ -326,5 +323,22 @@ $error = $_GET['error'] ?? '';
     </div>
 
 </div>
+
+<script>
+    // Validación cliente: campos vacíos
+    function validarLogin() {
+        const email = document.getElementById('usr_email').value.trim();
+        const pass  = document.getElementById('usr_pass').value;
+        if (!email || !pass) {
+            alert('Completá todos los campos.');
+            return false;
+        }
+        if (pass.length < 8) {
+            alert('La contraseña debe tener al menos 8 caracteres.');
+            return false;
+        }
+        return true;
+    }
+</script>
 </body>
 </html>

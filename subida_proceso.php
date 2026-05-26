@@ -1,8 +1,10 @@
 <?php
+// ============================================================
+// subida_proceso.php — Controlador: subir imagen de perfil
+// ============================================================
 session_start();
 require 'db.php';
 
-// Protección de sesión
 if (!isset($_SESSION['usuario_id'])) {
     header("Location: login.php");
     exit();
@@ -23,7 +25,6 @@ if ($archivo['error'] !== UPLOAD_ERR_OK) {
 // Validar MIME real
 $finfo    = new finfo(FILEINFO_MIME_TYPE);
 $mimeReal = $finfo->file($archivo['tmp_name']);
-
 $tiposPermitidos = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
 if (!in_array($mimeReal, $tiposPermitidos)) {
@@ -52,15 +53,15 @@ if (!move_uploaded_file($archivo['tmp_name'], $rutaFinal)) {
     exit();
 }
 
-// Guardar la ruta en la base de datos usando mysqli
+// Actualizar campo "imagen" en la tabla usuario
 $conn = getConexion();
-$stmt = $conn->prepare("UPDATE usuarios SET avatar = ? WHERE id = ?");
+$stmt = $conn->prepare("UPDATE usuario SET imagen = ? WHERE id = ?");
 $stmt->bind_param('si', $rutaFinal, $_SESSION['usuario_id']);
 $stmt->execute();
 $stmt->close();
 
 // Actualizar sesión
-$_SESSION['foto'] = $rutaFinal;
+$_SESSION['imagen'] = $rutaFinal;
 
 header("Location: perfil.php?upload=ok");
 exit();
