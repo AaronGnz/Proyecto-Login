@@ -99,7 +99,7 @@ $stmt->execute();
 $nuevo_id = $conn->insert_id;
 $stmt->close();
 
-// Iniciar sesión automáticamente
+
 session_regenerate_id(true);
 $_SESSION['usuario_id'] = (int) $nuevo_id;
 $_SESSION['usr_name']   = $usr_name;
