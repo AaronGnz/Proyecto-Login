@@ -1,7 +1,5 @@
 <?php
-// ============================================================
-// login_proceso.php — Controlador: procesa el inicio de sesión
-// ============================================================
+
 session_start();
 
 if (!empty($_SESSION['usuario_id'])) {
@@ -19,13 +17,11 @@ require_once __DIR__ . '/db.php';
 $usr_email = trim($_POST['usr_email'] ?? '');
 $usr_pass  = $_POST['usr_pass'] ?? '';
 
-// --- Validación servidor: campos vacíos ---
 if (empty($usr_email) || empty($usr_pass)) {
     header("Location: login.php?error=campos");
     exit();
 }
 
-// --- Validación servidor: longitud mínima ---
 if (strlen($usr_pass) < 8) {
     header("Location: login.php?error=credenciales");
     exit();
@@ -57,7 +53,7 @@ if (!password_verify($usr_pass, $fila['usr_pass'])) {
     exit();
 }
 
-// Login exitoso — guardar datos en sesión
+
 session_regenerate_id(true);
 $_SESSION['usuario_id'] = (int) $fila['id'];
 $_SESSION['usr_name']   = $fila['usr_name'];
